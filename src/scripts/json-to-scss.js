@@ -1,9 +1,10 @@
 // Requiring fs module in which writeFile function is defined.
 const fs = require('fs')
+
 // todo: fetch data from json file
-let scssData = {
+let data = {
     "color": {
-        "black": {
+        "blackkkk": {
             "description": "",
             "type": "color",
             "value": "#202020ff",
@@ -71,11 +72,15 @@ let scssData = {
         }
     }
 }
-let data = toScss(scssData.color)
+toScss('color', data)
 
-function toScss(data) {
-    let dataArray = toObjectArray(data)
-    return toScssVariables(dataArray)
+function toScss(type, data) {
+    let dataArray = toObjectArray(data[type])
+    let scss = toScssVariables(dataArray)
+    fs.writeFile(`assets/css/settings/_settings.${type}.scss`, scss, (err) => {
+        if (err) throw err
+        console.log('The scss file has been generated from data and saved!')
+    })
 }
 
 // map data to array of objects
@@ -83,11 +88,8 @@ function toObjectArray(data) {
     let array = []
     for (let key in data) {
         array.push({
-            [key]: {
-                color: data[key].value
-            }
-        })
-    }
+            [key]: { color: data[key].value }
+        })}
     return array
 }
 
@@ -106,9 +108,3 @@ function toScssVariables(data) {
 function replaceSpaceWithDash(string) {
     return string.replace(/ /g, '-')
 }
-
-// write data to scss file
-fs.writeFile('assets/css/settings/_settings.tokens.scss', data, function (err) {
-    if (err) throw err;
-    console.log('generated scss file from data');
-});
