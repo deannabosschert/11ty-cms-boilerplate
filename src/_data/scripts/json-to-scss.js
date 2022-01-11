@@ -3,8 +3,11 @@ const fs = require('fs')
 
 // fetch data from design-tokens.json
 const data = require('../styles/design-tokens.json')
+const varablePres = ['tiny', 'small', 'middle','medium', 'large', 'x-large', 'xx-large', 'xxx-large', 'hughmongus']
+
 toScss('color', 'variables', data)
 toScss('font', 'properties', data)
+toScss('typography', 'all', data)
 
 function toScss(type, output, data) {
     let dataArray = toObjectArray(type, data[type])
@@ -14,10 +17,21 @@ function toScss(type, output, data) {
         scss = toScssVariables(type, dataArray)
     } else if (output == 'properties') {
         scss = toScssProperties(dataArray)
+    } else if (output == 'all') {
+        scss =  generateVariables(dataArray)
     }
-    
+
     writeFile(type, scss)
 }
+
+// function getAllProperties(type, output, data) {
+//     let dataArray = toObjectArray(type, data[type])
+
+//      let eind = generateVariables(dataArray)
+//      console.log('eind: ', eind)
+//     //  writeFile(type, scss)
+
+// }
 
 // map data to array of objects
 function toObjectArray(type, data) {
@@ -44,6 +58,25 @@ function toObjectArray(type, data) {
             })
         }
         return array
+    
+    }   else if (type == 'typography') {
+        let oneProperty = ''
+        let onePropertyArray = []
+
+        for (let key in data) {
+            let property = data[key]
+            for (let key in property) {
+                if (key == 'fontSize') { // example; to be replaced with a loop later
+                    oneProperty = `${sanitizeString(key)}`
+                    onePropertyArray.push(`${property[key].value}${addUnit(sanitizeString(key))}`)
+                }
+            }
+
+        }
+        array.push({
+            [oneProperty]: onePropertyArray
+        })
+        return array
     }
 }
 
@@ -67,6 +100,36 @@ function toScssProperties(data) {
         }
     })
     return scss
+}
+
+function generateVariables(data) {
+    let listWithNames = ''
+
+   data.forEach(variable => {
+        let listOfValues = []
+
+        for (let thing in variable) {
+            listOfValues.push(variable[thing])
+        }
+
+    //    listOfValues.flat().sort().forEach(value => {
+    //         listWithNames+= `$font-size-large: ${value}; \n`
+    //         return value
+    //     })
+
+        let cleanList = listOfValues.flat().sort()
+
+
+        // remove duplicates from cleanList
+        let uniqueList = removeDuplicates(cleanList)
+
+        // for loop with index
+        for (let i = 0; i < uniqueList.length; i++) {
+            listWithNames+= `$${'font-size-'}${varablePres[i]}: ${uniqueList[i]}; \n`
+        }
+    })
+    return listWithNames
+
 }
 
 function sanitizeString(string) {
@@ -104,6 +167,12 @@ function addUnit(property) {
     } else {
       return ''
     }
+}
+
+function removeDuplicates(array) {
+    return array.filter((item, pos) => {
+        return array.indexOf(item) == pos
+    })
 }
 
 function writeFile(type, scss) {
