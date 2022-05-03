@@ -1,4 +1,6 @@
 # 11ty CMS boilerplate
+A boilerplate-repository that contains a connection with NetlifyCMS as headless CMS, a script that generates a SCSS variables file from Figma design tokens. Site is generated using Eleventy Static Site Generator.
+
  ... [link to live demo]()-->
 ![screenshot of website]()
 
